@@ -9,7 +9,7 @@ import user
 
 
 def getUserPosts(c,username):
-    c.execute("SELECT POSTED.username,POST.username,POST.timestamp,POST.message,POST.postID,USER.picture FROM USER JOIN POSTED ON USER.username=POST.username JOIN POST ON POST.postid=POSTED.postid WHERE POSTED.username=? ORDER BY timestamp DESC",[username])
+    c.execute("SELECT DISTINCT(POSTED.postID),POSTED.username,POST.username,POST.timestamp,POST.message,USER.picture FROM USER JOIN POSTED ON USER.username=POST.username JOIN POST ON POST.postid=POSTED.postid WHERE POSTED.username=? ORDER BY timestamp DESC",[username])
     ans = []
     res = c.fetchall()
     for aRes in res:

@@ -14,7 +14,7 @@ class User(object):
         '''
         Constructor
         '''
-        self.username = args[0]
+        self.username = '@' + args[0]
         self.email = args[1]
         self.desc = args[2]
         self.picture = args[3]
@@ -24,4 +24,11 @@ class User(object):
         return self.name + "\n\t" + self.username + ", " + self.email + ", " + self.desc + ", " + self.picture
     
     def toHTML(self):
-        return "<h2>" + self.name + "</h2>\n<h3>" + self.username + "</h3>\n<p>" + self.desc + "</p>\n"
+        file = open("user_template.html")
+        page = ""
+        for lines in file:
+            page += lines.replace("$u",self.username)
+        page = page.replace("$p",self.picture)
+        page = page.replace("$n",self.name)
+        page = page.replace("$d",self.desc)
+        return page

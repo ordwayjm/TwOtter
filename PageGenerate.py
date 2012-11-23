@@ -1,21 +1,27 @@
 import Backend
 import sqlite3
 
-username = 'JohnSmith'
-conn = sqlite3.connect("twotter.db")
-c = conn.cursor()
+def postsToHTML(username, getFeed):
+    
+    conn = sqlite3.connect("twotter.db")
+    c = conn.cursor()
+    if (getFeed):
+        posts = Backend.getUserFeed(c, username)
+    else:
+        posts = Backend.getUserPosts(c, username)
+    userInfo = Backend.getUserInfo(c, username)
+    conn.close()
+    postHTML = ""
+    for p in posts:
+        postHTML += p.toHTML()
+    userHTML = userInfo.toHTML()
+    
+    
+    template = open("template.html","r")
+    page = ""
+    for line in template:
+        page += line.replace('@?@?@',postHTML)
+    page = page.replace('#@#@#', userHTML)
+    return page
 
-posts = Backend.getUserFeed(c, username)
-postHTML = ""
-for p in posts:
-    postHTML += p.toHTML()
-user = Backend.getUserInfo(c, username)
-userHTML = user.toHTML()
-
-
-template = open("template.html","r")
-page = ""
-for line in template:
-    page += line.replace('@?@?@',postHTML)
-page = page.replace('#@#@#', userHTML)
-print(page)
+print(postsToHTML("KyleRogers",False))
