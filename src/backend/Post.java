@@ -4,6 +4,11 @@ import java.io.FileNotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Represents the fields in the Post/Posted tables
+ * @author Kyle Rogers
+ *
+ */
 public class Post {
 
 	private String postBy, postedBy, message, postTime, picture;
