@@ -5,6 +5,11 @@ import java.io.FileNotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Represents the fields in the User table
+ * @author Kyle Rogers
+ *
+ */
 public class User {
 
 	private static final String 
