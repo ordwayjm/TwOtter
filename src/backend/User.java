@@ -43,6 +43,8 @@ public class User {
 		html = html.replaceFirst(DESC_RE, description);
 		html = html.replaceFirst(NAME_RE, name);
 		html = html.replaceFirst(PICTURE_RE, picture);
+		html = html.replaceAll("<", "&#60");
+		html = html.replaceAll(">", "&#62");
 		return html;		
 	}
 }

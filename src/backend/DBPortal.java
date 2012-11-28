@@ -8,7 +8,9 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.sql.*;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Database Portal that acts as a portal to the program database. Methods are provided for generating HTML documents
@@ -24,20 +26,23 @@ public class DBPortal {
 	
 	// SQL statement for retrieving all of the posts that a user has posted, including reposts
 	private static final String GET_USER_POSTS_STATEMENT = 
-			"SELECT DISTINCT(POSTED.postID),POSTED.username,POST.username,POST.timestamp,POST.message,USER.picture " + 
+			"SELECT DISTINCT(POSTED.postID),POSTED.username,POST.username,POSTED.timestamp,POST.message,USER.picture " + 
 					"FROM USER JOIN POSTED ON USER.username=POST.username JOIN POST ON POST.postid=POSTED.postid WHERE " + 
 					"POSTED.username= ? ORDER BY timestamp DESC";
 
 	// SQL statement for retrieving all of the posts for the users that a given user follows
 	// This statement returns both an original post and each repost. It should only return the oldest post
 	private static final String GET_FEED_STATEMENT = 
-			"SELECT DISTINCT(POSTED.postID),POSTED.username,POST.username,POST.timestamp,POST.message,USER.picture " + 
+			"SELECT DISTINCT(POSTED.postID),POSTED.username,POST.username,POSTED.timestamp,POST.message,USER.picture " + 
 					"FROM POST JOIN POSTED ON POST.postid=POSTED.postid JOIN FOLLOWING ON FOLLOWING.followee=POSTED.username " + 
 					"JOIN USER ON POST.username=USER.username WHERE FOLLOWING.follower=? ORDER BY timestamp DESC";
 
 	// SQL statement for retrieving getting all of the information for a given user
 	private static final String GET_USER_INFO_STATEMENT = 
 			"SELECT username,email,description,picture,name FROM USER WHERE username=?";
+	
+	private static final String CREATE_POST_STATEMENT = 
+			"INSERT INTO POST VALUES(null,?,?); INSERT INTO POSTED VALUES( ?,(select last_insert_rowid()),null,?);";
 	
 	/**
 	 * Creates a portal to src/backend/twotter.db
@@ -53,6 +58,33 @@ public class DBPortal {
 		} catch (SQLException e)	{
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean post(String message, String sessionID)
+	{
+		PreparedStatement prepStmt;
+		try {
+			String username = getUsernameByID(sessionID);
+			Date now = new Date();
+			prepStmt = conn.prepareStatement(CREATE_POST_STATEMENT);
+			prepStmt.setString(1, message);
+			prepStmt.setString(2, username);
+			prepStmt.setString(3, username);
+			prepStmt.setString(4, DateFormat.getDateTimeInstance(
+		            DateFormat.SHORT, DateFormat.SHORT).format(now));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	private String getUsernameByID(String sessionID) throws SQLException
+	{
+		PreparedStatement prepStmt = conn.prepareStatement("SELECT username FROM USER WHERE sessionID = ?");
+		prepStmt.setString(1, sessionID);
+		ResultSet rs = prepStmt.executeQuery();
+		return rs.getString("username");
 	}
 
 	/**
@@ -89,6 +121,11 @@ public class DBPortal {
 	public String getProfileHTML(String username) throws FileNotFoundException, SQLException
 	{
 		return getHTML(username,false);
+	}
+	
+	public String getProfileHTML_SessionID(String sessionID) throws FileNotFoundException, SQLException
+	{
+		return getHTML(getUsernameByID(sessionID),false);
 	}
 	
 	/**
