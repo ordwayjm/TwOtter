@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class Post {
 
 	private String postBy, postedBy, message, postTime, picture;
-	private long postID;
+	private Long postID;
 	private static final String 	POSTED_BY_RE = "%postedUser%",
 									POST_BY_RE = "%postUser%",
 									MESSAGE_RE = "%message%",
@@ -57,6 +57,7 @@ public class Post {
 		
 		String postTempF = DBPortal.readFile("src" + DBPortal.SEP + "backend" + DBPortal.SEP + "HTMLTemplates" + DBPortal.SEP + "post_template.html");
 		String html = postTempF.replaceFirst(POSTED_BY_RE, (postBy.equals(postedBy)) ? "" : "Reposted by " + postedBy);
+		html = html.replaceAll(POST_ID_RE, postID.toString());
 		html = html.replaceAll(POST_BY_RE, postBy);
 		html = html.replaceFirst(MESSAGE_RE, message);
 		html = html.replaceFirst(POST_TIME_RE, postTime);
