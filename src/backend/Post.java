@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class Post {
 
 	private String postBy, postedBy, message, postTime, picture;
-	private long postID;
+	private Long postID;
 	private static final String 	POSTED_BY_RE = "%postedUser%",
 									POST_BY_RE = "%postUser%",
 									MESSAGE_RE = "%message%",
@@ -30,6 +30,8 @@ public class Post {
 		this.picture 	= picture;
 		this.postID 	= postID;
 		this.postTime 	= postTime;
+		message = message.replaceAll("<", "&#60");
+		message = message.replaceAll(">", "&#62");
 	}
 	
 	protected Post(ResultSet rs) throws SQLException
@@ -40,6 +42,8 @@ public class Post {
 		this.postTime 	= rs.getString(4);
 		this.message 	= rs.getString(5);
 		this.picture 	= rs.getString(6);
+		message = message.replaceAll("<", "&#60");
+		message = message.replaceAll(">", "&#62");
 	}
 	
 	@Override
@@ -50,8 +54,10 @@ public class Post {
 	
 	public String toHTML() throws FileNotFoundException
 	{
+		
 		String postTempF = DBPortal.readFile("src" + DBPortal.SEP + "backend" + DBPortal.SEP + "HTMLTemplates" + DBPortal.SEP + "post_template.html");
 		String html = postTempF.replaceFirst(POSTED_BY_RE, (postBy.equals(postedBy)) ? "" : "Reposted by " + postedBy);
+		html = html.replaceAll(POST_ID_RE, postID.toString());
 		html = html.replaceAll(POST_BY_RE, postBy);
 		html = html.replaceFirst(MESSAGE_RE, message);
 		html = html.replaceFirst(POST_TIME_RE, postTime);
