@@ -9,6 +9,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.sql.*;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -28,14 +29,26 @@ public class DBPortal {
 	 */
 	public static void main(String[] args) throws SQLException, FileNotFoundException
 	{
-		DBPortal portal = new DBPortal();
+			DBPortal portal = new DBPortal();
+//		try {
+//			portal.createPost("This is a post!", "KyleRogers");
+//			Thread.sleep(1000);
+//			portal.createPost("I'm a jerkface!", "ShannonEric");
+//			Thread.sleep(10000);
+//			portal.createPost("This is a twot!", "JustinO");
+//			Thread.sleep(5000);
+//			portal.createPost("WHOOOOAAAAA SQEEEEAAKKKKIINNGGGGG!", "Wangy");
+//			Thread.sleep(7000);
+//		} catch(InterruptedException ex) {
+//			Thread.currentThread().interrupt();
+//		}
 		System.out.println(portal.getHTML("KyleRogers", true));
 	}
-	
+
 	public static final char SEP = File.separatorChar;
 
 	private Connection conn;
-	
+
 	// SQL statement for retrieving all of the posts that a user has posted, including reposts
 	private static final String GET_USER_POSTS_STATEMENT = 
 			"SELECT DISTINCT(POSTED.postID),POSTED.username,POST.username,POSTED.timestamp,POST.message,USER.picture " + 
@@ -52,11 +65,13 @@ public class DBPortal {
 	// SQL statement for retrieving getting all of the information for a given user
 	private static final String GET_USER_INFO_STATEMENT = 
 			"SELECT username,email,description,picture,name FROM USER WHERE username=?";
-	
+
 	private static final String CREATE_POST_STATEMENT = 
-			"INSERT INTO POST VALUES(null,?,?); INSERT INTO POSTED VALUES( ?,(select last_insert_rowid()),null,?);";
-	
-	
+			"INSERT INTO POST VALUES(null,?,?)";
+	private static final String CREATE_POSTED_STATEMENT = 
+			"INSERT INTO POSTED VALUES( ?,(select last_insert_rowid()),null,?)";
+
+
 	/**
 	 * Creates a portal to src/backend/twotter.db
 	 */
@@ -71,25 +86,40 @@ public class DBPortal {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public boolean createPost(String message, long sessionID)
+	{
+		String username = "";
+		try {
+			username = getUsernameByID(sessionID);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return createPost(message,username);
+	}
+
+	public boolean createPost(String message, String username)
 	{
 		PreparedStatement prepStmt;
 		try {
-			String username = getUsernameByID(sessionID);
-			Date now = new Date();
 			prepStmt = conn.prepareStatement(CREATE_POST_STATEMENT);
 			prepStmt.setString(1, message);
 			prepStmt.setString(2, username);
-			prepStmt.setString(3, username);
-			prepStmt.setString(4, DateFormat.getDateTimeInstance(
-		            DateFormat.SHORT, DateFormat.SHORT).format(now));
+			prepStmt.execute();
+			prepStmt = conn.prepareStatement(CREATE_POSTED_STATEMENT);
+			prepStmt.setString(1, username);
+			String format = "yyyy-MM-dd hh:mm:ss.SS a";
+			SimpleDateFormat sdf = new SimpleDateFormat(format);
+			Date now = new Date();
+			prepStmt.setString(2, sdf.format(now));
+			return prepStmt.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return true;
+		return false;
 	}
-	
+
 	private String getUsernameByID(long sessionID) throws SQLException
 	{
 		PreparedStatement prepStmt = conn.prepareStatement("SELECT username FROM USER WHERE sessionID = ?");
@@ -97,7 +127,7 @@ public class DBPortal {
 		ResultSet rs = prepStmt.executeQuery();
 		return rs.getString("username");
 	}
-	
+
 	/**
 	 * Dynamically generates an HTML page for username's news feed
 	 * @param username The user requesting a news feed
@@ -121,7 +151,7 @@ public class DBPortal {
 	{
 		return getHTML(username,false);
 	}
-	
+
 	/**
 	 * Retrieves the profile of the user based on their session ID
 	 * @param sessionID
@@ -133,7 +163,7 @@ public class DBPortal {
 	{
 		return getHTML(getUsernameByID(sessionID),false);
 	}
-	
+
 	/**
 	 * Dynamically generates an HTML page for either a newsfeed or a profile
 	 * @param username The user who's information is to be retrieved
@@ -157,7 +187,7 @@ public class DBPortal {
 		return page;
 	}
 
-	
+
 	private ArrayList<Post> getPosts(String username, boolean newsfeed) throws SQLException
 	{
 		ArrayList<Post> posts = new ArrayList<Post>();
