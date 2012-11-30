@@ -167,9 +167,9 @@ public class HttpHandler extends java.lang.Thread {
 						sessionId = DEFAULT_ID;
 						sendLogin();
 					}
-					//else if(DBPortal.userExists(URL.substring(1))) {
-					//	userProfile(URL);
-					//}
+					else if(portal.userExists(URL.substring(1))) {
+						userProfile(URL);
+					}
 					else {
 						send404();
 					}
