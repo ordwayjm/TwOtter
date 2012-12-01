@@ -167,9 +167,9 @@ public class HttpHandler extends java.lang.Thread {
 						sessionId = DEFAULT_ID;
 						sendLogin();
 					}
-					//else if(DBPortal.userExists(URL.substring(1))) {
-					//	userProfile(URL);
-					//}
+					else if(portal.userExists(URL.substring(1))) {
+						userProfile(URL);
+					}
 					else {
 						send404();
 					}
@@ -212,13 +212,13 @@ public class HttpHandler extends java.lang.Thread {
 
 	//Newsfeed that is sent when the user first logs on, sets the sessionId cookie for the client browser
 	//establishing session control until the user logs out.
-	public void sendLoginNewsFeed() throws IOException {
+	public void sendLoginNewsFeed() throws IOException, SQLException {
 		String username = portal.getUsernameByID(sessionId);
 		String body = portal.getNewsFeedHTML(username);
 		sendCookieResponse(200,"OK","text/html",body.getBytes());
 	}
 	
-	public void sendNewsFeed() throws IOException {
+	public void sendNewsFeed() throws IOException, SQLException {
 		String username = portal.getUsernameByID(sessionId);
 		String body = portal.getNewsFeedHTML(username);
 		sendResponse(200,"OK","text/html",body.getBytes());
