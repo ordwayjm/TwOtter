@@ -190,12 +190,12 @@ public class HttpHandler extends java.lang.Thread {
 		}
 	}
 
-	public void sendProfile() {
+	public void sendProfile() throws SQLException, IOException {
 		String body = portal.getProfileHTML_SessionID(sessionId);
 		sendResponse(200,"OK","text/html",body.getBytes());
 	}
 
-	public void getLogin(String URL) throws IOException {
+	public void getLogin(String URL) throws IOException, SQLException {
 		String responses[] = URL.split("=");
 		String username = responses[1].substring(0, responses[1].length()-9);
 		String password = responses[2];
