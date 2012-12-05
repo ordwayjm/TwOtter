@@ -252,6 +252,7 @@ public class DBPortal {
 		String tempF = DBPortal.readFile("src" + DBPortal.SEP + "backend" + DBPortal.SEP + "HTMLTemplates" + DBPortal.SEP + "template.html");
 		String page = tempF.replaceFirst("%userInformation%", userHTML);
 		page = page.replaceFirst("%posts%", postHTML);
+		page = page.replaceAll("%username%", username);
 		return page;
 	}
 
